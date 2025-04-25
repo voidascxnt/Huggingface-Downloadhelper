@@ -27,6 +27,9 @@ pip install -r requirements.txt
 The simplest way to use this tool is by running the batch file:
 
 ```bash
+# Super Basic usge:
+doubleclick the downloadhelper.bat
+
 # Basic usage
 downloadhelper.bat model_name
 
