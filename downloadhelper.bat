@@ -1,51 +1,39 @@
 @echo off
-cd /d %~dp0
-echo Starting Hugging Face Model Downloader...
+setlocal enabledelayedexpansion
 
-:: Set up environment variables
-set VENV_DIR=%~dp0hg_downloader_env
-set REQUIREMENTS_MARKER=%VENV_DIR%\.requirements_installed
+:: Parse command line arguments
+set MODEL_ID=
+set NO_AUTO_NEXT=false
 
-:: Check if virtual environment exists
-if not exist "%VENV_DIR%\Scripts\activate.bat" (
-    echo Creating new virtual environment...
-    python -m venv "%VENV_DIR%"
-    if ERRORLEVEL 1 (
-        echo Error: Failed to create virtual environment.
-        echo Please make sure Python 3.6+ is installed and in your PATH.
-        pause
-        exit /b 1
-    )
+:parse_args
+if "%~1"=="" goto :done_parsing
+if "%~1"=="--no-auto-next" (
+    set NO_AUTO_NEXT=true
+    shift
+    goto :parse_args
+)
+if not defined MODEL_ID (
+    set MODEL_ID=%~1
+    shift
+    goto :parse_args
+)
+shift
+goto :parse_args
+
+:done_parsing
+
+:: If no model ID is provided, launch the UI
+if "%MODEL_ID%"=="" (
+    echo Launching Huggingface Downloadhelper UI...
+    python ui.py
+    goto :eof
 )
 
-:: Activate the virtual environment
-call "%VENV_DIR%\Scripts\activate.bat"
-echo Using Python from: %PYTHON%
+:: Add the --no-auto-next flag to the Python command if needed
+set AUTO_NEXT_FLAG=
+if "%NO_AUTO_NEXT%"=="true" set AUTO_NEXT_FLAG=--no-auto-next
 
-:: Check if requirements are installed
-if not exist "%REQUIREMENTS_MARKER%" (
-    echo First run detected. Installing required packages...
-    pip install huggingface_hub PyQt5 requests
-    if ERRORLEVEL 1 (
-        echo Error: Failed to install required packages.
-        pause
-        exit /b 1
-    )
-    echo. > "%REQUIREMENTS_MARKER%"
-    echo Requirements successfully installed.
-)
+:: Call Python script with processed arguments
+python -m downloadhelper %MODEL_ID% %AUTO_NEXT_FLAG% %*
 
-:: Run the Python script
-python hg-dlv2.py
-
-:: Check for errors
-if %ERRORLEVEL% NEQ 0 (
-    echo Error running Hugging Face downloader.
-    echo Error code: %ERRORLEVEL%
-    pause
-    exit /b %ERRORLEVEL%
-)
-
-:: If we get here, all is good
-echo Script completed successfully.
-pause
+endlocal

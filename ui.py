@@ -351,6 +351,7 @@ class HuggingFaceDownloaderGUI(QMainWindow):
         self.status_layout.addWidget(self.cancel_btn)
         
         # Add everything to main layout
+        self.main_layout.addLayout(speed_layout)  # Add the speed control layout
         self.main_layout.addWidget(self.scroll_area)
         self.main_layout.addLayout(self.status_layout)
         
@@ -626,6 +627,18 @@ class HuggingFaceDownloaderGUI(QMainWindow):
             daemon=True
         )
         thread.start()
+
+    def on_download_started(self, filename):
+        # Create a progress bar for this file if it doesn't exist yet
+        if filename not in self.progress_bars:
+            progress_bar = ProgressBarWidget(filename)
+            self.progress_layout.addWidget(progress_bar)
+            self.progress_bars[filename] = progress_bar
+            
+            # Ensure the progress bar is visible
+            self.scroll_area.ensureWidgetVisible(progress_bar)
+
+# Add the missing main() function
 def main():
     app = QApplication(sys.argv)
     window = HuggingFaceDownloaderGUI()
@@ -633,5 +646,20 @@ def main():
     sys.exit(app.exec_())
 
 if __name__ == "__main__":
-    main()_ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Download models from Huggingface Hub")
+    parser.add_argument("model_id", nargs="?", help="Huggingface model ID to download")
+    parser.add_argument("--save-path", default="./models", help="Directory to save the model")
+    parser.add_argument("--no-auth", action="store_true", help="Disable authentication")
+    parser.add_argument("--token", help="Huggingface token")
+    parser.add_argument("--revision", help="Branch or commit to download from")
+    parser.add_argument("--files", help="Comma-separated list of files to download")
+    parser.add_argument("--no-resume", action="store_true", help="Don't resume interrupted downloads")
+    parser.add_argument("--no-auto-next", action="store_true", help="Don't automatically queue next part")
+    
+    args = parser.parse_args()
+    
+    # Always launch the GUI. Command-line arguments are currently ignored.
+    # If CLI functionality is desired, the HuggingfaceDownloader class needs to be implemented.
     main()

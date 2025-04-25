@@ -111,6 +111,17 @@ models = ["meta-llama/Llama-2-7b", "facebook/opt-350m"]
 downloader.download_multiple(models, max_workers=2)
 ```
 
+## Preventing Duplicate Downloads
+
+When downloading multiple parts of a model simultaneously, you can prevent automatic queuing of the next part to avoid duplicate downloads:
+
+```bash
+# Disable auto-queueing of the next part
+downloadhelper.bat meta-llama/Llama-2-7b-part4 --no-auto-next
+```
+
+This is especially useful when you've manually started multiple parts in parallel and don't want the system to automatically queue parts that are already downloading.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
